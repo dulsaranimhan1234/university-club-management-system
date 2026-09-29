@@ -1,18 +1,31 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState("");
-  
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    setMessage("");
+
+    if (!email || !password) {
+      setMessage("Please enter your email and password.");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const response = await axios.post(
         "http://localhost:5001/api/auth/login",
         {
@@ -26,53 +39,355 @@ function Login() {
       // Save JWT token
       localStorage.setItem("token", response.data.token);
 
+      // Save user information
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.user)
+      );
+
+      // Optional remember-me behavior
+      if (rememberMe) {
+        localStorage.setItem("rememberMe", "true");
+      } else {
+        localStorage.removeItem("rememberMe");
+      }
+
       navigate("/dashboard");
     } catch (error) {
       console.error(error);
 
       setMessage(
-        error.response?.data?.message || "Login failed"
+        error.response?.data?.message ||
+          "Unable to connect to the server."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      <h1>University Club Management System</h1>
+    <div className="login-page">
 
-      <h2>Login</h2>
+      {/* Background decorative elements */}
+      <div className="background-glow glow-one"></div>
+      <div className="background-glow glow-two"></div>
 
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>Email</label>
-          <br />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-          />
-        </div>
+      <main className="login-container">
 
-        <br />
+        {/* ================= LEFT PANEL ================= */}
+        <section className="login-visual">
 
-        <div>
-          <label>Password</label>
-          <br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
-          />
-        </div>
+          <div className="visual-overlay"></div>
 
-        <br />
+          <div className="visual-content">
 
-        <button type="submit">Login</button>
-      </form>
+            {/* Logo */}
+            <div className="brand">
+              <div className="brand-name">UCM</div>
 
-      {message && <p>{message}</p>}
+              <div className="brand-title">
+                UNIVERSITY CLUB
+                <br />
+                MANAGEMENT SYSTEM
+              </div>
+
+              <div className="brand-line"></div>
+            </div>
+
+            {/* Main message */}
+            <div className="visual-message">
+
+              <h1>
+                CONNECT.
+                <br />
+                <span>LEAD.</span>
+                <br />
+                BELONG.
+              </h1>
+
+              <p>
+                Discover university clubs, join vibrant
+                communities, participate in events and
+                activities, and make the most of your
+                university journey.
+              </p>
+
+              <div className="small-line"></div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        {/* ================= RIGHT PANEL ================= */}
+        <section className="login-form-section">
+
+          <div className="login-form-container">
+
+            <div className="welcome-section">
+
+              <h2>WELCOME BACK!</h2>
+
+              <p>
+                Sign in to continue to your club dashboard.
+              </p>
+
+            </div>
+
+
+            <form onSubmit={handleLogin}>
+
+              {/* EMAIL */}
+              <div className="input-group">
+
+                <label htmlFor="email">
+                </label>
+
+                <div className="input-wrapper">
+
+                  <span className="input-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <rect
+                        x="3"
+                        y="5"
+                        width="18"
+                        height="14"
+                        rx="2"
+                      />
+                      <path d="m3 7 9 6 9-6" />
+                    </svg>
+                  </span>
+
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) =>
+                      setEmail(e.target.value)
+                    }
+                    autoComplete="email"
+                  />
+
+                </div>
+
+              </div>
+
+
+              {/* PASSWORD */}
+              <div className="input-group">
+
+                <label htmlFor="password">
+                </label>
+
+                <div className="input-wrapper">
+
+                  <span className="input-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <rect
+                        x="5"
+                        y="10"
+                        width="14"
+                        height="10"
+                        rx="2"
+                      />
+                      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                    </svg>
+                  </span>
+
+                  <input
+                    id="password"
+                    type={
+                      showPassword
+                        ? "text"
+                        : "password"
+                    }
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) =>
+                      setPassword(e.target.value)
+                    }
+                    autoComplete="current-password"
+                  />
+
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() =>
+                      setShowPassword(!showPassword)
+                    }
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      >
+                        <path d="M3 3l18 18" />
+                        <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                        <path d="M9.9 4.2A10.8 10.8 0 0 1 12 4c5 0 8.5 4 9.8 6a16 16 0 0 1-3.1 3.5" />
+                        <path d="M6.2 6.2C4.3 7.5 2.9 9.3 2.2 10c1.3 2 4.8 6 9.8 6 1.1 0 2.1-.2 3-.5" />
+                      </svg>
+                    ) : (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      >
+                        <path d="M2.2 12s3.5-6 9.8-6 9.8 6 9.8 6-3.5 6-9.8 6-9.8-6-9.8-6Z" />
+                        <circle cx="12" cy="12" r="2.5" />
+                      </svg>
+                    )}
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              {/* OPTIONS */}
+              <div className="login-options">
+
+                <label className="remember">
+
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) =>
+                      setRememberMe(e.target.checked)
+                    }
+                  />
+
+                  <span className="custom-checkbox"></span>
+
+                  <span>Remember me</span>
+
+                </label>
+
+                <button
+                  type="button"
+                  className="forgot-password"
+                  onClick={() =>
+                    setMessage(
+                      "Password recovery will be available soon."
+                    )
+                  }
+                >
+                  Forgot password?
+                </button>
+
+              </div>
+
+
+              {/* ERROR MESSAGE */}
+              {message && (
+                <div className="login-message">
+                  {message}
+                </div>
+              )}
+
+
+              {/* LOGIN BUTTON */}
+              <button
+                type="submit"
+                className="login-button"
+                disabled={loading}
+              >
+
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign in
+                    <span className="arrow">→</span>
+                  </>
+                )}
+
+              </button>
+
+
+              {/* DIVIDER */}
+              <div className="divider">
+
+                <span></span>
+
+                <p>OR</p>
+
+                <span></span>
+
+              </div>
+
+
+              {/* GOOGLE BUTTON */}
+              <button
+                type="button"
+                className="google-button"
+                onClick={() =>
+                  setMessage(
+                    "Google sign-in will be available soon."
+                  )
+                }
+              >
+
+                <span className="google-icon">
+                  G
+                </span>
+
+                <span>
+                  Sign in with Google
+                </span>
+
+              </button>
+
+
+              {/* SIGN UP */}
+              <div className="signup-text">
+
+                Don't have an account?
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMessage(
+                      "Registration page will be available soon."
+                    )
+                  }
+                >
+                  Sign up
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </section>
+
+      </main>
+
     </div>
   );
 }
